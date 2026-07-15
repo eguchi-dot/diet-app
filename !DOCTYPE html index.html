@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>総合ボディメイク・ダッシュボード</title>
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-4 max-w-md mx-auto">
+    <header class="mb-6 text-center">
+        <h1 class="text-2xl font-bold text-slate-800">BodyMake Dashboard</h1>
+        <p class="text-xs text-slate-500 mt-1">ダイエット期間 ＆ PFC計算</p>
+    </header>
+
+    <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-4">
+        <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2">📅 ダイエット期間計算</h2>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">現在の体重 (kg)</label>
+                <input type="number" id="currentWeight" value="80" class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">目標の体重 (kg)</label>
+                <input type="number" id="targetWeight" value="72" class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">1日の消費カロリー (kcal)</label>
+                <input type="number" id="tdee" value="2300" class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">1日の摂取目標カロリー (kcal)</label>
+                <input type="number" id="intake" value="1800" class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button onclick="calcPeriod()" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-2">期間を計算する</button>
+            <div id="periodResult" class="hidden mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800 text-center font-semibold"></div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h2 class="font-bold text-slate-700 mb-4 flex items-center gap-2">🥗 PFC（リコンプ）計算</h2>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs text-slate-500 mb-1">現在の体脂肪率 (%)</label>
+                <input type="number" id="bodyFat" value="20" class="w-full p-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button onclick="calcPFC()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2.5 px-4 rounded-xl text-sm transition mt-2">PFCを計算する</button>
+            <div id="pfcResult" class="hidden mt-3 space-y-2">
+                <div class="p-3 bg-slate-50 rounded-xl text-sm text-slate-700 border border-slate-100">
+                    <p>除脂肪体重: <span id="lbmVal" class="font-bold text-slate-900">--</span> kg</p>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-100">
+                        <span class="text-amber-800 font-medium block mb-0.5">P (タンパク質)</span>
+                        <span id="pVal" class="font-bold text-slate-800 text-sm">--</span>
+                    </div>
+                    <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-100">
+                        <span class="text-blue-800 font-medium block mb-0.5">F (脂質)</span>
+                        <span id="fVal" class="font-bold text-slate-800 text-sm">--</span>
+                    </div>
+                    <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-100">
+                        <span class="text-emerald-800 font-medium block mb-0.5">C (炭水化物)</span>
+                        <span id="cVal" class="font-bold text-slate-800 text-sm">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function calcPeriod() {
+            const current = parseFloat(document.getElementById('currentWeight').value);
+            const target = parseFloat(document.getElementById('targetWeight').value);
+            const tdee = parseFloat(document.getElementById('tdee').value);
+            const intake = parseFloat(document.getElementById('intake').value);
+            
+            if (current <= target) {
+                alert('目標体重は現在体重より低い値を入力してください。');
+                return;
+            }
+            
+            const calorieDeficitPerDay = tdee - intake;
+            if (calorieDeficitPerDay <= 0) {
+                alert('消費カロリーが摂取カロリーを上回るように設定してください。');
+                return;
+            }
+            
+            const totalFatToLose = current - target;
+            const totalCaloriesToLose = totalFatToLose * 7200;
+            const daysRequired = Math.ceil(totalCaloriesToLose / calorieDeficitPerDay);
+            
+            const res = document.getElementById('periodResult');
+            res.classList.remove('hidden');
+            res.innerText = `目標達成まで約 ${daysRequired} 日（約 ${(daysRequired/30).toFixed(1)} ヶ月）必要です！`;
+        }
+
+        function calcPFC() {
+            const weight = parseFloat(document.getElementById('currentWeight').value);
+            const fat = parseFloat(document.getElementById('bodyFat').value);
+            const intake = parseFloat(document.getElementById('intake').value);
+            
+            const lbm = weight * (1 - (fat / 100));
+            document.getElementById('lbmVal').innerText = lbm.toFixed(1);
+            
+            // P: 除脂肪体重の 2.5g
+            const pGrams = lbm * 2.5;
+            const pKcal = pGrams * 4;
+            
+            // F: 摂取目標カロリーの 20%
+            const fKcal = intake * 0.20;
+            const fGrams = fKcal / 9;
+            
+            // C: 残りのカロリー
+            const cKcal = intake - pKcal - fKcal;
+            const cGrams = Math.max(0, cKcal / 4);
+            
+            document.getElementById('pVal').innerText = `${pGrams.toFixed(0)}g`;
+            document.getElementById('fVal').innerText = `${fGrams.toFixed(0)}g`;
+            document.getElementById('cVal').innerText = `${cGrams.toFixed(0)}g`;
+            
+            document.getElementById('pfcResult').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
